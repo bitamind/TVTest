@@ -24,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ''
+        ref: develop
         submodules: recursive
 
     - name: Add MSBuild to PATH
@@ -34,8 +34,8 @@ jobs:
     #  working-directory: ${{env.GITHUB_WORKSPACE}}
     #  run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
-    - name: Change code page utf-8
-      run: chcp 65001
+    #- name: Change code page utf-8
+    #  run: chcp 65001
 
     - name: Build LibISDB
       working-directory: ${{env.GITHUB_WORKSPACE}}
