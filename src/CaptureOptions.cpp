@@ -149,6 +149,7 @@ CCaptureOptions::~CCaptureOptions()
 bool CCaptureOptions::ReadSettings(CSettings &Settings)
 {
 	Settings.Read(TEXT("CaptureFolder"), &m_SaveFolder);
+	m_SaveFolder.ExpandEnvString();
 	if (!Settings.Read(TEXT("CaptureFileNameFormat"), &m_FileName)) {
 		// ver.0.9.0 より前との互換用
 		if (Settings.Read(TEXT("CaptureFileName"), &m_FileName))
@@ -202,7 +203,9 @@ bool CCaptureOptions::ReadSettings(CSettings &Settings)
 
 bool CCaptureOptions::WriteSettings(CSettings &Settings)
 {
-	Settings.Write(TEXT("CaptureFolder"), m_SaveFolder);
+	CFilePath SaveFolder(m_SaveFolder);
+	SaveFolder.UnExpandEnvString();
+	Settings.Write(TEXT("CaptureFolder"), SaveFolder);
 	Settings.Write(TEXT("CaptureFileNameFormat"), m_FileName);
 	Settings.Write(TEXT("CaptureSaveFormat"), m_ImageCodec.EnumSaveFormat(m_SaveFormat));
 	Settings.Write(TEXT("CaptureIconSaveFile"), m_fCaptureSaveToFile);
@@ -587,6 +590,7 @@ INT_PTR CCaptureOptions::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				String SaveFolder;
 				GetDlgItemString(hDlg, IDC_CAPTUREOPTIONS_SAVEFOLDER, &SaveFolder);
+				PathUtil::ExpandEnvString(&SaveFolder);
 				const CAppMain::CreateDirectoryResult CreateDirResult =
 					GetAppClass().CreateDirectory(
 						hDlg, SaveFolder.c_str(),

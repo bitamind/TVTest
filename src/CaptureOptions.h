@@ -96,7 +96,7 @@ namespace TVTest
 		bool OpenSaveFolder() const;
 
 	private:
-		String m_SaveFolder;
+		CFilePath m_SaveFolder;
 		String m_FileName{TEXT("Capture_%date%-%time%")};
 		int m_SaveFormat = 0;
 		int m_JPEGQuality = 90;

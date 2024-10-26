@@ -24,6 +24,8 @@
 
 #include "StringUtility.h"
 #include <format>
+#include <processenv.h>
+#include <shlwapi.h>
 
 
 namespace TVTest
@@ -50,6 +52,8 @@ namespace TVTest
 		bool IsRoot(const String &Path);
 		bool IsExists(const String &Path);
 		bool IsFileExists(const String &Path);
+		bool ExpandEnvString(String *pPath);
+		bool UnExpandEnvString(String *pPath);
 
 	} // namespace PathUtil
 
@@ -77,6 +81,8 @@ namespace TVTest
 		bool IsRoot() const { return PathUtil::IsRoot(*this); }
 		bool IsExists() const { return PathUtil::IsExists(*this); }
 		bool IsFileExists() const { return PathUtil::IsFileExists(*this); }
+		bool ExpandEnvString() { return PathUtil::ExpandEnvString(this); }
+		bool UnExpandEnvString() { return PathUtil::UnExpandEnvString(this); }
 	};
 
 } // namespace TVTest

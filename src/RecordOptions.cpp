@@ -97,7 +97,7 @@ bool CRecordOptions::ReadSettings(CSettings &Settings)
 	}
 	if (Settings.Read(TEXT("RecordFolder"), &Path)
 			&& !Path.empty())
-		m_SaveFolder = Path;
+		{ m_SaveFolder = Path; m_SaveFolder.ExpandEnvString(); }
 	if (Settings.Read(TEXT("RecordFileName"), &Path)
 			&& !Path.empty())
 		m_FileName = Path;
@@ -151,7 +151,9 @@ bool CRecordOptions::ReadSettings(CSettings &Settings)
 
 bool CRecordOptions::WriteSettings(CSettings &Settings)
 {
-	Settings.Write(TEXT("RecordFolder"), m_SaveFolder);
+	CFilePath SaveFolder(m_SaveFolder);
+	SaveFolder.UnExpandEnvString();
+	Settings.Write(TEXT("RecordFolder"), SaveFolder);
 	Settings.Write(TEXT("RecordFileName"), m_FileName);
 	Settings.Write(TEXT("ConfirmRecChChange"), m_fConfirmChannelChange);
 	Settings.Write(TEXT("ConfrimRecordingExit"), m_fConfirmExit);
@@ -500,6 +502,7 @@ INT_PTR CRecordOptions::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				String SaveFolder, FileName;
 
 				GetDlgItemString(hDlg, IDC_RECORDOPTIONS_SAVEFOLDER, &SaveFolder);
+				PathUtil::ExpandEnvString(&SaveFolder);
 				const CAppMain::CreateDirectoryResult CreateDirResult =
 					GetAppClass().CreateDirectory(
 						hDlg, SaveFolder.c_str(),

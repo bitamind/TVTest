@@ -305,6 +305,30 @@ bool IsFileExists(const String &Path)
 }
 
 
+bool ExpandEnvString(String *pPath)
+{
+	if ((pPath == nullptr) || pPath->empty())
+		{ return false; }
+	TCHAR tempPath[MAX_PATH + 1];
+	if (ExpandEnvironmentStringsW(pPath->c_str(), tempPath, MAX_PATH) == 0)
+		{ return false; }
+	pPath->assign(tempPath);
+	return true;
+}
+
+
+bool UnExpandEnvString(String *pPath)
+{
+	if ((pPath == nullptr) || pPath->empty())
+		{ return false; }
+	TCHAR tempPath[MAX_PATH];
+	if (!PathUnExpandEnvStringsW(pPath->c_str(), tempPath, MAX_PATH))
+		{ return false; }
+	pPath->assign(tempPath);
+	return true;
+}
+
+
 } // namespace PathUtil
 
 } // namespace TVTest
