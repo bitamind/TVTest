@@ -1,0 +1,76 @@
+name: MSBuild
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release_MD
+  PLATFORM_TARGET: x64
+  PLATFORM_TOOLSET: v141
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: develop
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    #- name: Restore NuGet packages
+    #  working-directory: ${{env.GITHUB_WORKSPACE}}
+    #  run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    #- name: Change code page utf-8
+    #  run: chcp 65001
+
+    - name: Build LibISDB
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild src\LibISDB\Projects\LibISDB.sln /m /t:build /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.PLATFORM_TARGET}} /p:PlatformToolset=${{env.PLATFORM_TOOLSET}}
+
+    - name: Build TVTest_Image
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild src\TVTest_Image.sln /m /t:build /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.PLATFORM_TARGET}} /p:PlatformToolset=${{env.PLATFORM_TOOLSET}}
+
+    - name: Build TVTest
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild src\TVTest.sln /m /t:build /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.PLATFORM_TARGET}} /p:PlatformToolset=${{env.PLATFORM_TOOLSET}}
+
+    - name: Build TVTest Samples
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild sdk\Samples\Samples.sln /m /t:build /p:Configuration=Release /p:Platform=${{env.PLATFORM_TARGET}} /p:PlatformToolset=${{env.PLATFORM_TOOLSET}} /p:WindowsTargetPlatformVersion=10.0.17763.0
+
+    - name: run package.sh
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: bash ./package.sh -a ${{env.PLATFORM_TARGET}} -c dynamic -r bz2 -t release
+    
+    - name: list files
+      run: ls package
+      
+    # Upload package: https://github.com/marketplace/actions/upload-artifact
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: TVTest ${{env.PLATFORM_TARGET}} ${{env.BUILD_CONFIGURATION}} build
+        path: package\TVTest*.bz2
